@@ -308,6 +308,10 @@ a {
   grid-template-columns: 320px 1fr;
 }
 
+.comparison-layout > * {
+  min-width: 0;
+}
+
 .filter-panel,
 .roster-panel,
 .detail-panel,
@@ -397,6 +401,12 @@ select:focus {
 
 .text-btn:hover {
   text-decoration: underline;
+}
+
+.picker-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .selection-summary {
@@ -653,6 +663,7 @@ select:focus {
   border-radius: 14px;
   padding: 12px;
   background: rgba(255, 255, 255, 0.04);
+  min-width: 0;
 }
 
 .chart-card h3 {
@@ -670,12 +681,14 @@ select:focus {
   border-radius: 14px;
   padding: 12px;
   background: rgba(255, 255, 255, 0.035);
+  min-width: 0;
 }
 
 .table-wrap {
   margin-top: 8px;
   max-height: 370px;
   overflow: auto;
+  min-width: 0;
 }
 
 table {
@@ -703,6 +716,65 @@ tbody td {
 
 tbody tr:hover {
   background: rgba(31, 214, 192, 0.08);
+}
+
+.comparison-cards {
+  display: none;
+  margin-top: 8px;
+  gap: 8px;
+}
+
+.comparison-card {
+  border: 1px solid rgba(173, 197, 214, 0.24);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  gap: 8px;
+}
+
+.comparison-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.comparison-card-head h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.comparison-card-head span {
+  font-size: 0.76rem;
+  color: var(--accent-gold);
+}
+
+.comparison-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.comparison-card-grid p {
+  margin: 0;
+  border: 1px solid rgba(173, 197, 214, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px 7px;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.comparison-card-grid span {
+  font-size: 0.67rem;
+  color: var(--text-soft);
+}
+
+.comparison-card-grid strong {
+  font-size: 0.8rem;
 }
 
 @media (max-width: 1320px) {
@@ -788,6 +860,10 @@ tbody tr:hover {
     min-width: 760px;
   }
 
+  .page-comparison .chart-card canvas {
+    height: 236px !important;
+  }
+
   .detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -865,6 +941,7 @@ tbody tr:hover {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    flex-wrap: wrap;
   }
 
   .page-comparison .form-stack {
@@ -878,6 +955,51 @@ tbody tr:hover {
 
   .page-comparison .athlete-list.compact {
     max-height: 240px;
+  }
+
+  .page-comparison .picker-panel {
+    gap: 10px;
+  }
+
+  .page-comparison .picker-actions {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .page-comparison .text-btn {
+    font-size: 0.76rem;
+  }
+
+  .page-comparison .chart-card h3 {
+    font-size: 0.88rem;
+  }
+
+  .page-comparison .chart-card canvas {
+    height: 190px !important;
+  }
+
+  .page-comparison .table-wrap {
+    display: none;
+  }
+
+  .page-comparison .comparison-cards {
+    display: grid;
+  }
+
+  .page-comparison .comparison-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-comparison .picker-panel.cmp-collapsed {
+    padding-bottom: 10px;
+  }
+
+  .page-comparison .picker-panel.cmp-collapsed .form-stack,
+  .page-comparison .picker-panel.cmp-collapsed #cmpSelectionCount,
+  .page-comparison .picker-panel.cmp-collapsed #cmpSelectedPills,
+  .page-comparison .picker-panel.cmp-collapsed #cmpAthleteList {
+    display: none;
   }
 
   .athlete-row {
@@ -1030,6 +1152,14 @@ tbody tr:hover {
     max-height: 220px;
   }
 
+  .page-comparison .panel-title-row {
+    align-items: flex-start;
+  }
+
+  .page-comparison .picker-actions .text-btn {
+    font-size: 0.72rem;
+  }
+
   .pill {
     font-size: 0.72rem;
     padding: 4px 8px;
@@ -1059,7 +1189,7 @@ tbody tr:hover {
   }
 
   .page-comparison .chart-card canvas {
-    height: 210px !important;
+    height: 170px !important;
   }
 
   .table-wrap {
@@ -1069,5 +1199,22 @@ tbody tr:hover {
 
   table {
     min-width: 720px;
+  }
+
+  .page-comparison .comparison-card {
+    padding: 9px;
+    gap: 7px;
+  }
+
+  .page-comparison .comparison-card-head h4 {
+    font-size: 0.86rem;
+  }
+
+  .page-comparison .comparison-card-grid {
+    gap: 6px;
+  }
+
+  .page-comparison .comparison-card-grid p {
+    padding: 6px;
   }
 }

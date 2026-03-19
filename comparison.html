@@ -41,10 +41,13 @@
       </section>
 
       <section class="comparison-layout">
-        <aside class="panel picker-panel">
+        <aside id="cmpPickerPanel" class="panel picker-panel">
           <div class="panel-title-row">
             <h2>Pick Athletes</h2>
-            <button id="cmpClearBtn" class="text-btn" type="button">Clear</button>
+            <div class="picker-actions">
+              <button id="cmpTogglePickerBtn" class="text-btn" type="button">Collapse</button>
+              <button id="cmpClearBtn" class="text-btn" type="button">Clear</button>
+            </div>
           </div>
 
           <div class="form-stack">
@@ -108,6 +111,7 @@
                 <tbody></tbody>
               </table>
             </div>
+            <div id="comparisonCards" class="comparison-cards"></div>
           </div>
         </section>
       </section>

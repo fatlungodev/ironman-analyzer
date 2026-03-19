@@ -18,12 +18,15 @@ const dom = {
   searchInput: document.getElementById("cmpSearchInput"),
   divisionFilter: document.getElementById("cmpDivisionFilter"),
   countryFilter: document.getElementById("cmpCountryFilter"),
+  pickerPanel: document.getElementById("cmpPickerPanel"),
+  togglePickerBtn: document.getElementById("cmpTogglePickerBtn"),
   clearBtn: document.getElementById("cmpClearBtn"),
   athleteList: document.getElementById("cmpAthleteList"),
   selectedPills: document.getElementById("cmpSelectedPills"),
   selectionCount: document.getElementById("cmpSelectionCount"),
   resultCount: document.getElementById("cmpResultCount"),
   tableBody: document.querySelector("#comparisonTable tbody"),
+  comparisonCards: document.getElementById("comparisonCards"),
   totalChartCanvas: document.getElementById("totalChart"),
   splitChartCanvas: document.getElementById("splitChart"),
 };
@@ -33,6 +36,7 @@ const state = {
   filteredAthletes: [],
   selectedIds: new Set(),
   splitBenchmarks: {},
+  pickerCollapsed: false,
 };
 
 let totalChart = null;
@@ -77,6 +81,16 @@ function syncStorage() {
 function setSelection(ids) {
   state.selectedIds = new Set(ids.slice(0, MAX_SELECTION));
   syncStorage();
+}
+
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 700px)").matches;
+}
+
+function updatePickerCollapsed(collapsed) {
+  state.pickerCollapsed = Boolean(collapsed);
+  dom.pickerPanel.classList.toggle("cmp-collapsed", state.pickerCollapsed);
+  dom.togglePickerBtn.textContent = state.pickerCollapsed ? "Expand" : "Collapse";
 }
 
 function applyFilters() {
@@ -187,6 +201,7 @@ function renderTable() {
 
   if (!selected.length) {
     dom.tableBody.innerHTML = '<tr><td colspan="10" class="muted">Select athletes to populate the table.</td></tr>';
+    dom.comparisonCards.innerHTML = '<div class="empty-state">Select athletes to view mobile detail cards.</div>';
     return;
   }
 
@@ -208,12 +223,34 @@ function renderTable() {
       `,
     )
     .join("");
+
+  dom.comparisonCards.innerHTML = selected
+    .map(
+      (athlete) => `
+        <article class="comparison-card">
+          <div class="comparison-card-head">
+            <h4>${escapeHtml(athlete.athleteName)}</h4>
+            <span>${formatRank(athlete.overallRank)}</span>
+          </div>
+          <p class="muted">${escapeHtml(athlete.country)} · BIB ${escapeHtml(athlete.bib)} · ${escapeHtml(athlete.division)}</p>
+          <div class="comparison-card-grid">
+            <p><span>Total</span><strong>${formatDuration(athlete.totalSec)}</strong></p>
+            <p><span>Swim</span><strong>${formatDuration(athlete.swimSec)}</strong></p>
+            <p><span>Bike</span><strong>${formatDuration(athlete.bikeSec)}</strong></p>
+            <p><span>Run</span><strong>${formatDuration(athlete.runSec)}</strong></p>
+            <p><span>T1</span><strong>${formatDuration(athlete.t1Sec)}</strong></p>
+            <p><span>T2</span><strong>${formatDuration(athlete.t2Sec)}</strong></p>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
 }
 
 function renderCharts() {
   const selected = selectedAthletes();
   const ChartLib = window.Chart;
-  const isMobile = window.matchMedia("(max-width: 700px)").matches;
+  const isMobile = isMobileViewport();
   const isVerySmall = window.matchMedia("(max-width: 430px)").matches;
 
   if (!ChartLib) {
@@ -244,7 +281,7 @@ function renderCharts() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      indexAxis: "y",
+      indexAxis: isMobile ? "x" : "y",
       scales: {
         x: {
           ticks: { color: "#deefff", font: { size: isVerySmall ? 10 : 11 } },
@@ -420,6 +457,16 @@ function bindEvents() {
     setSelection([]);
     renderAll();
   });
+
+  dom.togglePickerBtn.addEventListener("click", () => {
+    updatePickerCollapsed(!state.pickerCollapsed);
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isMobileViewport() && state.pickerCollapsed) {
+      updatePickerCollapsed(false);
+    }
+  });
 }
 
 function introMotion() {
@@ -454,6 +501,8 @@ async function bootstrap() {
         .map((athlete) => athlete.id);
       setSelection(defaults);
     }
+
+    updatePickerCollapsed(isMobileViewport());
 
     renderAll();
     bindEvents();
