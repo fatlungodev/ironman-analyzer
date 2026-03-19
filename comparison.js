@@ -25,16 +25,18 @@ const dom = {
   resultCount: document.getElementById("cmpResultCount"),
   tableBody: document.querySelector("#comparisonTable tbody"),
   totalChartCanvas: document.getElementById("totalChart"),
-  splitBreakdown: document.getElementById("splitBreakdown"),
+  splitChartCanvas: document.getElementById("splitChart"),
 };
 
 const state = {
   allAthletes: [],
   filteredAthletes: [],
   selectedIds: new Set(),
+  splitBenchmarks: {},
 };
 
 let totalChart = null;
+let splitChart = null;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -84,6 +86,48 @@ function applyFilters() {
     country: dom.countryFilter.value,
     sortBy: "overall",
   });
+}
+
+function buildSplitBenchmarks(athletes) {
+  const benchmarks = {};
+
+  SPLIT_KEYS.forEach((splitKey) => {
+    const values = athletes.map((athlete) => athlete[`${splitKey}Sec`]).filter((value) => Number.isFinite(value) && value > 0);
+
+    if (!values.length) {
+      benchmarks[splitKey] = {
+        fastest: null,
+        slowest: null,
+        average: null,
+      };
+      return;
+    }
+
+    const fastest = Math.min(...values);
+    const slowest = Math.max(...values);
+    const average = values.reduce((sum, value) => sum + value, 0) / values.length;
+
+    benchmarks[splitKey] = {
+      fastest,
+      slowest,
+      average,
+    };
+  });
+
+  return benchmarks;
+}
+
+function toSplitScore(seconds, benchmark) {
+  if (!benchmark || !Number.isFinite(seconds) || seconds <= 0 || !Number.isFinite(benchmark.fastest) || !Number.isFinite(benchmark.slowest)) {
+    return null;
+  }
+
+  if (benchmark.fastest === benchmark.slowest) {
+    return 100;
+  }
+
+  const score = ((benchmark.slowest - seconds) / (benchmark.slowest - benchmark.fastest)) * 100;
+  return Math.max(0, Math.min(100, Number(score.toFixed(1))));
 }
 
 function renderPickerList() {
@@ -166,78 +210,20 @@ function renderTable() {
     .join("");
 }
 
-function renderSplitBreakdown(selected) {
-  if (!selected.length) {
-    dom.splitBreakdown.innerHTML = '<div class="empty-state">Select athletes to view split breakdown.</div>';
-    return;
-  }
-
-  dom.splitBreakdown.innerHTML = SPLIT_KEYS.map((splitKey) => {
-    const rows = selected
-      .map((athlete) => ({
-        athlete,
-        seconds: athlete[`${splitKey}Sec`],
-      }))
-      .filter((entry) => Number.isFinite(entry.seconds) && entry.seconds > 0)
-      .sort((a, b) => a.seconds - b.seconds);
-
-    if (!rows.length) {
-      return `
-        <section class="split-group">
-          <div class="split-group-head">
-            <h4>${SPLIT_LABELS[splitKey]}</h4>
-            <p>No valid split values.</p>
-          </div>
-        </section>
-      `;
-    }
-
-    const min = rows[0].seconds;
-    const max = rows[rows.length - 1].seconds;
-
-    const rowMarkup = rows
-      .map((entry, index) => {
-        const normalized = max === min ? 1 : (max - entry.seconds) / (max - min);
-        const width = 24 + normalized * 76; // shorter time => longer bar
-        return `
-          <div class="split-item-row">
-            <div class="split-athlete">${escapeHtml(shortName(entry.athlete.athleteName))}</div>
-            <div class="split-bar-track">
-              <div class="split-bar-fill" style="width: ${width.toFixed(2)}%"></div>
-            </div>
-            <div class="split-time-block">
-              <span>#${index + 1}</span>
-              <strong>${formatDuration(entry.seconds)}</strong>
-            </div>
-          </div>
-        `;
-      })
-      .join("");
-
-    return `
-      <section class="split-group">
-        <div class="split-group-head">
-          <h4>${SPLIT_LABELS[splitKey]}</h4>
-          <p>獨立刻度：最快 ${formatDuration(min)} · 最慢 ${formatDuration(max)}</p>
-        </div>
-        <div class="split-group-rows">${rowMarkup}</div>
-      </section>
-    `;
-  }).join("");
-}
-
 function renderCharts() {
   const selected = selectedAthletes();
   const ChartLib = window.Chart;
+
+  if (!ChartLib) {
+    return;
+  }
 
   if (totalChart) {
     totalChart.destroy();
   }
 
-  renderSplitBreakdown(selected);
-
-  if (!ChartLib) {
-    return;
+  if (splitChart) {
+    splitChart.destroy();
   }
 
   totalChart = new ChartLib(dom.totalChartCanvas, {
@@ -269,6 +255,86 @@ function renderCharts() {
       },
       plugins: {
         legend: { labels: { color: "#eff9ff" } },
+      },
+      animation: { duration: 760, easing: "easeOutQuart" },
+    },
+  });
+
+  const benchmarkDataset = {
+    label: "Field Average (preload)",
+    data: SPLIT_KEYS.map((splitKey) => toSplitScore(state.splitBenchmarks[splitKey]?.average, state.splitBenchmarks[splitKey])),
+    rawTimes: SPLIT_KEYS.map((splitKey) => state.splitBenchmarks[splitKey]?.average ?? null),
+    fill: false,
+    borderDash: [6, 4],
+    borderColor: "#ffffff",
+    pointBackgroundColor: "#ffffff",
+    pointBorderColor: "#ffffff",
+    pointRadius: 3,
+    borderWidth: 2,
+  };
+
+  const athleteDatasets = selected.map((athlete, index) => ({
+    label: shortName(athlete.athleteName),
+    data: SPLIT_KEYS.map((splitKey) => toSplitScore(athlete[`${splitKey}Sec`], state.splitBenchmarks[splitKey])),
+    rawTimes: SPLIT_KEYS.map((splitKey) => athlete[`${splitKey}Sec`]),
+    fill: true,
+    backgroundColor: `${palette[index % palette.length]}2d`,
+    borderColor: palette[index % palette.length],
+    pointBackgroundColor: palette[index % palette.length],
+    borderWidth: 2,
+    pointRadius: 3,
+  }));
+
+  splitChart = new ChartLib(dom.splitChartCanvas, {
+    type: "radar",
+    data: {
+      labels: SPLIT_KEYS.map((splitKey) => SPLIT_LABELS[splitKey]),
+      datasets: [benchmarkDataset, ...athleteDatasets],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          angleLines: { color: "rgba(173,197,214,0.22)" },
+          grid: { color: "rgba(173,197,214,0.2)" },
+          pointLabels: { color: "#deefff" },
+          ticks: {
+            color: "#b9d4e8",
+            backdropColor: "transparent",
+            stepSize: 20,
+            callback: (value) => `${value}%`,
+          },
+        },
+      },
+      plugins: {
+        legend: { labels: { color: "#eff9ff" } },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const dataset = context.dataset;
+              const raw = dataset.rawTimes?.[context.dataIndex];
+              if (!Number.isFinite(raw)) {
+                return `${dataset.label}: N/A`;
+              }
+              return `${dataset.label}: ${formatDuration(raw)} (Score ${context.raw})`;
+            },
+            afterLabel: (context) => {
+              const splitKey = SPLIT_KEYS[context.dataIndex];
+              const benchmark = state.splitBenchmarks[splitKey];
+              if (!benchmark || !Number.isFinite(benchmark.fastest)) {
+                return "";
+              }
+              return [
+                `Fastest: ${formatDuration(benchmark.fastest)}`,
+                `Average: ${formatDuration(benchmark.average)}`,
+                `Slowest: ${formatDuration(benchmark.slowest)}`,
+              ];
+            },
+          },
+        },
       },
       animation: { duration: 760, easing: "easeOutQuart" },
     },
@@ -355,6 +421,8 @@ function introMotion() {
 async function bootstrap() {
   try {
     state.allAthletes = await loadAthletes();
+    state.splitBenchmarks = buildSplitBenchmarks(state.allAthletes);
+
     const { divisions, countries } = getFilterValues(state.allAthletes);
 
     fillSelect(dom.divisionFilter, divisions, "Divisions");

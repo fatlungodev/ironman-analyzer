@@ -654,91 +654,6 @@ select:focus {
   height: 260px !important;
 }
 
-.split-breakdown {
-  display: grid;
-  gap: 14px;
-  max-height: 340px;
-  overflow: auto;
-  padding-right: 2px;
-}
-
-.split-group {
-  border: 1px solid rgba(173, 197, 214, 0.2);
-  border-radius: 12px;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  display: grid;
-  gap: 9px;
-}
-
-.split-group-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.split-group-head h4 {
-  margin: 0;
-  font-size: 0.88rem;
-}
-
-.split-group-head p {
-  margin: 0;
-  font-size: 0.72rem;
-  color: var(--text-soft);
-}
-
-.split-group-rows {
-  display: grid;
-  gap: 8px;
-}
-
-.split-item-row {
-  display: grid;
-  grid-template-columns: minmax(84px, 108px) 1fr 88px;
-  gap: 10px;
-  align-items: center;
-}
-
-.split-athlete {
-  font-size: 0.72rem;
-  color: var(--text-soft);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.split-bar-track {
-  height: 10px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: rgba(173, 197, 214, 0.22);
-}
-
-.split-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent-cool), var(--accent-gold));
-  transform-origin: left center;
-  animation: growWidth 520ms ease;
-}
-
-.split-time-block {
-  display: grid;
-  justify-items: end;
-  gap: 2px;
-}
-
-.split-time-block span {
-  font-size: 0.66rem;
-  color: var(--text-soft);
-}
-
-.split-time-block strong {
-  font-size: 0.75rem;
-}
-
 .table-shell {
   border: 1px solid rgba(173, 197, 214, 0.2);
   border-radius: 14px;
@@ -845,14 +760,5 @@ tbody tr:hover {
 
   .mini-metric {
     text-align: left;
-  }
-
-  .split-item-row {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  .split-time-block {
-    justify-items: start;
   }
 }
