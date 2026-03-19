@@ -763,6 +763,31 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
+  .page-comparison .comparison-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .page-comparison .analytics-panel {
+    order: 1;
+  }
+
+  .page-comparison .picker-panel {
+    order: 2;
+  }
+
+  .page-comparison .athlete-list.compact {
+    max-height: 300px;
+  }
+
+  .page-comparison .table-wrap {
+    max-height: 340px;
+    overflow: auto;
+  }
+
+  .page-comparison table {
+    min-width: 760px;
+  }
+
   .detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -833,6 +858,26 @@ tbody tr:hover {
   .picker-panel,
   .analytics-panel {
     padding: 12px;
+  }
+
+  .page-comparison .panel-title-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .page-comparison .form-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .page-comparison .form-stack .field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .page-comparison .athlete-list.compact {
+    max-height: 240px;
   }
 
   .athlete-row {
@@ -940,6 +985,10 @@ tbody tr:hover {
     line-height: 1.42;
   }
 
+  .page-comparison .hero-text {
+    font-size: 0.84rem;
+  }
+
   .kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
@@ -973,6 +1022,14 @@ tbody tr:hover {
     padding: 10px;
   }
 
+  .page-comparison .form-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .page-comparison .athlete-list.compact {
+    max-height: 220px;
+  }
+
   .pill {
     font-size: 0.72rem;
     padding: 4px 8px;
@@ -999,6 +1056,10 @@ tbody tr:hover {
 
   .chart-card canvas {
     height: 220px !important;
+  }
+
+  .page-comparison .chart-card canvas {
+    height: 210px !important;
   }
 
   .table-wrap {

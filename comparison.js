@@ -213,6 +213,8 @@ function renderTable() {
 function renderCharts() {
   const selected = selectedAthletes();
   const ChartLib = window.Chart;
+  const isMobile = window.matchMedia("(max-width: 700px)").matches;
+  const isVerySmall = window.matchMedia("(max-width: 430px)").matches;
 
   if (!ChartLib) {
     return;
@@ -245,16 +247,16 @@ function renderCharts() {
       indexAxis: "y",
       scales: {
         x: {
-          ticks: { color: "#deefff" },
+          ticks: { color: "#deefff", font: { size: isVerySmall ? 10 : 11 } },
           grid: { color: "rgba(173,197,214,0.18)" },
         },
         y: {
-          ticks: { color: "#deefff" },
+          ticks: { color: "#deefff", font: { size: isVerySmall ? 10 : 11 } },
           grid: { display: false },
         },
       },
       plugins: {
-        legend: { labels: { color: "#eff9ff" } },
+        legend: { display: false, labels: { color: "#eff9ff" } },
       },
       animation: { duration: 760, easing: "easeOutQuart" },
     },
@@ -300,18 +302,31 @@ function renderCharts() {
           max: 100,
           angleLines: { color: "rgba(173,197,214,0.22)" },
           grid: { color: "rgba(173,197,214,0.2)" },
-          pointLabels: { color: "#deefff" },
+          pointLabels: {
+            color: "#deefff",
+            font: { size: isVerySmall ? 10 : isMobile ? 11 : 12 },
+          },
           ticks: {
             color: "#b9d4e8",
             backdropColor: "transparent",
-            stepSize: 20,
+            stepSize: isMobile ? 25 : 20,
+            display: !isVerySmall,
             callback: (value) => `${value}%`,
           },
         },
       },
       plugins: {
-        legend: { labels: { color: "#eff9ff" } },
+        legend: {
+          position: isMobile ? "bottom" : "top",
+          labels: {
+            color: "#eff9ff",
+            boxWidth: isVerySmall ? 8 : 12,
+            font: { size: isVerySmall ? 10 : 11 },
+          },
+        },
         tooltip: {
+          bodyFont: { size: isVerySmall ? 11 : 12 },
+          titleFont: { size: isVerySmall ? 11 : 12 },
           callbacks: {
             label: (context) => {
               const dataset = context.dataset;
