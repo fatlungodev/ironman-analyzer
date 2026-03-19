@@ -178,6 +178,17 @@ a {
   gap: 14px;
 }
 
+.site-footer {
+  position: relative;
+  z-index: 1;
+  max-width: 1580px;
+  margin: 8px auto 22px;
+  padding: 10px 22px;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
 .panel {
   border: 1px solid var(--line);
   border-radius: 18px;
