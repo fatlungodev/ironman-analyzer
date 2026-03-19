@@ -90,15 +90,19 @@ function applyFilters() {
 }
 
 function renderKpis() {
-  const overview = computeOverview(state.allAthletes);
+  const overview = computeOverview(state.filteredAthletes);
+  const hasFilteredResults = overview.participants > 0;
+  const averageDisplay = hasFilteredResults ? formatDuration(overview.averageTotal) : "--";
+
   dom.kpiGrid.innerHTML = `
     <article class="kpi-card">
-      <p class="label">Participants</p>
+      <p class="label">Filtered Athletes</p>
       <p class="value">${overview.participants.toLocaleString()}</p>
+      <p class="helper">of ${state.allAthletes.length.toLocaleString()} total</p>
     </article>
     <article class="kpi-card">
       <p class="label">Average Finish</p>
-      <p class="value">${formatDuration(overview.averageTotal)}</p>
+      <p class="value">${averageDisplay}</p>
     </article>
     <article class="kpi-card">
       <p class="label">Fastest Overall</p>
@@ -234,6 +238,7 @@ function renderSelectedDetails() {
 
 function renderAll() {
   applyFilters();
+  renderKpis();
   renderAthleteList();
   renderSelectedPills();
   renderSelectedDetails();
@@ -341,7 +346,6 @@ async function bootstrap() {
 
     dom.sourceLabel.textContent = `Preloaded: Hengqin text dataset (${state.allAthletes.length.toLocaleString()} athletes)`;
 
-    renderKpis();
     renderAll();
     bindEvents();
     introMotion();
