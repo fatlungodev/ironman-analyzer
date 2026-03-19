@@ -100,6 +100,23 @@ function parseTabSeparatedText(text) {
   });
 }
 
+function isPositiveTime(value) {
+  return Number.isFinite(value) && value > 0;
+}
+
+function shouldIgnoreAthlete(athlete) {
+  if (!athlete) {
+    return true;
+  }
+  if (athlete.overallRank === 99999) {
+    return true;
+  }
+  if (!isPositiveTime(athlete.totalSec)) {
+    return true;
+  }
+  return false;
+}
+
 function resolveField(rowEntries, candidates) {
   const candidateList = Array.isArray(candidates) ? candidates : [candidates];
 
@@ -194,7 +211,7 @@ export async function loadAthletes({ forceReload = false } = {}) {
 
   const text = await response.text();
   const rows = parseTabSeparatedText(text);
-  const athletes = rows.map((row, index) => normalizeAthlete(row, index)).filter(Boolean);
+  const athletes = rows.map((row, index) => normalizeAthlete(row, index)).filter((athlete) => !shouldIgnoreAthlete(athlete));
 
   cachedAthletes = athletes;
   return athletes;
@@ -218,7 +235,7 @@ export function formatDuration(seconds) {
 }
 
 export function formatRank(rank) {
-  if (!Number.isFinite(rank) || rank <= 0) {
+  if (!Number.isFinite(rank) || rank <= 0 || rank >= 99999) {
     return "--";
   }
   return `#${Math.round(rank)}`;
@@ -251,11 +268,21 @@ export function applyFiltersAndSort(athletes, { searchText = "", division = "all
 
   const sorters = {
     overall: (a, b) => (a.overallRank ?? Number.MAX_SAFE_INTEGER) - (b.overallRank ?? Number.MAX_SAFE_INTEGER),
-    totalAsc: (a, b) => (a.totalSec ?? Number.MAX_SAFE_INTEGER) - (b.totalSec ?? Number.MAX_SAFE_INTEGER),
-    totalDesc: (a, b) => (b.totalSec ?? Number.MIN_SAFE_INTEGER) - (a.totalSec ?? Number.MIN_SAFE_INTEGER),
-    swim: (a, b) => (a.swimSec ?? Number.MAX_SAFE_INTEGER) - (b.swimSec ?? Number.MAX_SAFE_INTEGER),
-    bike: (a, b) => (a.bikeSec ?? Number.MAX_SAFE_INTEGER) - (b.bikeSec ?? Number.MAX_SAFE_INTEGER),
-    run: (a, b) => (a.runSec ?? Number.MAX_SAFE_INTEGER) - (b.runSec ?? Number.MAX_SAFE_INTEGER),
+    totalAsc: (a, b) =>
+      (isPositiveTime(a.totalSec) ? a.totalSec : Number.MAX_SAFE_INTEGER) -
+      (isPositiveTime(b.totalSec) ? b.totalSec : Number.MAX_SAFE_INTEGER),
+    totalDesc: (a, b) =>
+      (isPositiveTime(b.totalSec) ? b.totalSec : Number.MIN_SAFE_INTEGER) -
+      (isPositiveTime(a.totalSec) ? a.totalSec : Number.MIN_SAFE_INTEGER),
+    swim: (a, b) =>
+      (isPositiveTime(a.swimSec) ? a.swimSec : Number.MAX_SAFE_INTEGER) -
+      (isPositiveTime(b.swimSec) ? b.swimSec : Number.MAX_SAFE_INTEGER),
+    bike: (a, b) =>
+      (isPositiveTime(a.bikeSec) ? a.bikeSec : Number.MAX_SAFE_INTEGER) -
+      (isPositiveTime(b.bikeSec) ? b.bikeSec : Number.MAX_SAFE_INTEGER),
+    run: (a, b) =>
+      (isPositiveTime(a.runSec) ? a.runSec : Number.MAX_SAFE_INTEGER) -
+      (isPositiveTime(b.runSec) ? b.runSec : Number.MAX_SAFE_INTEGER),
   };
 
   filtered.sort(sorters[sortBy] || sorters.overall);
@@ -263,9 +290,9 @@ export function applyFiltersAndSort(athletes, { searchText = "", division = "all
 }
 
 export function computeOverview(athletes) {
-  const validTotals = athletes.filter((athlete) => Number.isFinite(athlete.totalSec));
-  const validSwims = athletes.filter((athlete) => Number.isFinite(athlete.swimSec));
-  const validBikes = athletes.filter((athlete) => Number.isFinite(athlete.bikeSec));
+  const validTotals = athletes.filter((athlete) => isPositiveTime(athlete.totalSec));
+  const validSwims = athletes.filter((athlete) => isPositiveTime(athlete.swimSec));
+  const validBikes = athletes.filter((athlete) => isPositiveTime(athlete.bikeSec));
 
   const averageTotal = validTotals.reduce((sum, athlete) => sum + athlete.totalSec, 0) / Math.max(1, validTotals.length);
   const fastest = [...validTotals].sort((a, b) => a.totalSec - b.totalSec)[0] || null;
