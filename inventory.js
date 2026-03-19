@@ -107,9 +107,9 @@ function renderKpis() {
       <p class="label">Average Finish</p>
       <p class="value">${averageDisplay}</p>
       <div class="avg-splits">
-        <p><span>Swim</span><strong>${averageSwim}</strong></p>
-        <p><span>Bike</span><strong>${averageBike}</strong></p>
-        <p><span>Run</span><strong>${averageRun}</strong></p>
+        <p><span>Avg. Swim</span><strong>${averageSwim}</strong></p>
+        <p><span>Avg. Bike</span><strong>${averageBike}</strong></p>
+        <p><span>Avg. Run</span><strong>${averageRun}</strong></p>
       </div>
     </article>
     <article class="kpi-card">
