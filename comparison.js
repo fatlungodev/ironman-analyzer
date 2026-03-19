@@ -17,6 +17,7 @@ const palette = ["#ff7e4f", "#1fd6c0", "#ffd06f", "#9ba9ff", "#94f2ca", "#ff97b3
 const dom = {
   searchInput: document.getElementById("cmpSearchInput"),
   divisionFilter: document.getElementById("cmpDivisionFilter"),
+  genderFilter: document.getElementById("cmpGenderFilter"),
   countryFilter: document.getElementById("cmpCountryFilter"),
   pickerPanel: document.getElementById("cmpPickerPanel"),
   togglePickerBtn: document.getElementById("cmpTogglePickerBtn"),
@@ -97,6 +98,7 @@ function applyFilters() {
   state.filteredAthletes = applyFiltersAndSort(state.allAthletes, {
     searchText: dom.searchInput.value,
     division: dom.divisionFilter.value,
+    gender: dom.genderFilter.value,
     country: dom.countryFilter.value,
     sortBy: "overall",
   });
@@ -420,7 +422,7 @@ function toggleSelection(id, forceValue = null) {
 }
 
 function bindEvents() {
-  [dom.searchInput, dom.divisionFilter, dom.countryFilter].forEach((element) => {
+  [dom.searchInput, dom.divisionFilter, dom.genderFilter, dom.countryFilter].forEach((element) => {
     element.addEventListener("input", renderAll);
     element.addEventListener("change", renderAll);
   });
@@ -485,9 +487,10 @@ async function bootstrap() {
     state.allAthletes = await loadAthletes();
     state.splitBenchmarks = buildSplitBenchmarks(state.allAthletes);
 
-    const { divisions, countries } = getFilterValues(state.allAthletes);
+    const { divisions, genders, countries } = getFilterValues(state.allAthletes);
 
     fillSelect(dom.divisionFilter, divisions, "Divisions");
+    fillSelect(dom.genderFilter, genders, "Genders");
     fillSelect(dom.countryFilter, countries, "Countries");
 
     const validIds = new Set(state.allAthletes.map((athlete) => athlete.id));

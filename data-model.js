@@ -104,6 +104,20 @@ function isPositiveTime(value) {
   return Number.isFinite(value) && value > 0;
 }
 
+function inferGenderFromDivision(division) {
+  const normalized = String(division ?? "")
+    .trim()
+    .toUpperCase();
+
+  if (normalized.startsWith("M")) {
+    return "Male";
+  }
+  if (normalized.startsWith("F")) {
+    return "Female";
+  }
+  return "Unknown";
+}
+
 function shouldIgnoreAthlete(athlete) {
   if (!athlete) {
     return true;
@@ -158,6 +172,7 @@ function normalizeAthlete(row, rowIndex) {
   const country = String(resolveField(rowEntries, ["country", "nation", "nationality"])).trim().toUpperCase() || "--";
   const bib = String(resolveField(rowEntries, ["bib", "bibnumber", "bib#", "number"])).trim() || "--";
   const division = String(resolveField(rowEntries, ["division", "agegroup", "category"])).trim() || "--";
+  const gender = inferGenderFromDivision(division);
 
   const overallRank = toNumber(resolveField(rowEntries, ["overallrank", "overallrank1", "overall", "rank"]));
   const genderRank = toNumber(resolveField(rowEntries, ["genderrank", "sexrank"]));
@@ -183,6 +198,7 @@ function normalizeAthlete(row, rowIndex) {
     country,
     bib,
     division,
+    gender,
     overallRank,
     genderRank,
     divRank,
@@ -256,18 +272,20 @@ export function shortName(name) {
 export function getFilterValues(athletes) {
   const divisions = [...new Set(athletes.map((athlete) => athlete.division).filter((value) => value && value !== "--"))].sort();
   const countries = [...new Set(athletes.map((athlete) => athlete.country).filter((value) => value && value !== "--"))].sort();
-  return { divisions, countries };
+  const genders = [...new Set(athletes.map((athlete) => athlete.gender).filter((value) => value && value !== "Unknown"))].sort();
+  return { divisions, countries, genders };
 }
 
-export function applyFiltersAndSort(athletes, { searchText = "", division = "all", country = "all", sortBy = "overall" }) {
+export function applyFiltersAndSort(athletes, { searchText = "", division = "all", gender = "all", country = "all", sortBy = "overall" }) {
   const query = String(searchText).trim().toLowerCase();
 
   const filtered = athletes.filter((athlete) => {
     const searchTarget = `${athlete.athleteName} ${athlete.bib}`.toLowerCase();
     const matchesSearch = !query || searchTarget.includes(query);
     const matchesDivision = division === "all" || athlete.division === division;
+    const matchesGender = gender === "all" || athlete.gender === gender;
     const matchesCountry = country === "all" || athlete.country === country;
-    return matchesSearch && matchesDivision && matchesCountry;
+    return matchesSearch && matchesDivision && matchesGender && matchesCountry;
   });
 
   const sorters = {

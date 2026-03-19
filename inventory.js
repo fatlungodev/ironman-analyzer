@@ -19,6 +19,7 @@ const dom = {
   sourceLabel: document.getElementById("sourceLabel"),
   searchInput: document.getElementById("searchInput"),
   divisionFilter: document.getElementById("divisionFilter"),
+  genderFilter: document.getElementById("genderFilter"),
   countryFilter: document.getElementById("countryFilter"),
   sortSelect: document.getElementById("sortSelect"),
   kpiGrid: document.getElementById("kpiGrid"),
@@ -84,6 +85,7 @@ function applyFilters() {
   state.filteredAthletes = applyFiltersAndSort(state.allAthletes, {
     searchText: dom.searchInput.value,
     division: dom.divisionFilter.value,
+    gender: dom.genderFilter.value,
     country: dom.countryFilter.value,
     sortBy: dom.sortSelect.value,
   });
@@ -271,7 +273,7 @@ function toggleSelection(id, forceValue = null) {
 }
 
 function bindEvents() {
-  [dom.searchInput, dom.divisionFilter, dom.countryFilter, dom.sortSelect].forEach((element) => {
+  [dom.searchInput, dom.divisionFilter, dom.genderFilter, dom.countryFilter, dom.sortSelect].forEach((element) => {
     element.addEventListener("input", renderAll);
     element.addEventListener("change", renderAll);
   });
@@ -338,9 +340,10 @@ function introMotion() {
 async function bootstrap() {
   try {
     state.allAthletes = await loadAthletes();
-    const { divisions, countries } = getFilterValues(state.allAthletes);
+    const { divisions, genders, countries } = getFilterValues(state.allAthletes);
 
     fillSelect(dom.divisionFilter, divisions, "Divisions");
+    fillSelect(dom.genderFilter, genders, "Genders");
     fillSelect(dom.countryFilter, countries, "Countries");
 
     const validIds = new Set(state.allAthletes.map((athlete) => athlete.id));
