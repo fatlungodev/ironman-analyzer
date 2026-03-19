@@ -107,22 +107,22 @@ function renderKpis() {
     <article class="kpi-card">
       <p class="label">Fastest Overall</p>
       <p class="value">${formatDuration(overview.fastest?.totalSec)}</p>
-      <p class="helper">${escapeHtml(shortName(overview.fastest?.athleteName ?? "--"))}</p>
+      <p class="helper">${escapeHtml(overview.fastest?.athleteName ?? "--")}</p>
     </article>
     <article class="kpi-card">
       <p class="label">Best Swim Split</p>
       <p class="value">${formatDuration(overview.bestSwim?.swimSec)}</p>
-      <p class="helper">${escapeHtml(shortName(overview.bestSwim?.athleteName ?? "--"))}</p>
+      <p class="helper">${escapeHtml(overview.bestSwim?.athleteName ?? "--")}</p>
     </article>
     <article class="kpi-card">
       <p class="label">Best Bike Split</p>
       <p class="value">${formatDuration(overview.bestBike?.bikeSec)}</p>
-      <p class="helper">${escapeHtml(shortName(overview.bestBike?.athleteName ?? "--"))}</p>
+      <p class="helper">${escapeHtml(overview.bestBike?.athleteName ?? "--")}</p>
     </article>
     <article class="kpi-card">
       <p class="label">Best Run Split</p>
       <p class="value">${formatDuration(overview.bestRun?.runSec)}</p>
-      <p class="helper">${escapeHtml(shortName(overview.bestRun?.athleteName ?? "--"))}</p>
+      <p class="helper">${escapeHtml(overview.bestRun?.athleteName ?? "--")}</p>
     </article>
   `;
 }
