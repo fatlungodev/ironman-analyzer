@@ -169,6 +169,11 @@ function renderTable() {
 
 function renderCharts() {
   const selected = selectedAthletes();
+  const ChartLib = window.Chart;
+
+  if (!ChartLib) {
+    return;
+  }
 
   if (totalChart) {
     totalChart.destroy();
@@ -178,7 +183,7 @@ function renderCharts() {
     splitChart.destroy();
   }
 
-  totalChart = new Chart(dom.totalChartCanvas, {
+  totalChart = new ChartLib(dom.totalChartCanvas, {
     type: "bar",
     data: {
       labels: selected.map((athlete) => shortName(athlete.athleteName)),
@@ -212,7 +217,7 @@ function renderCharts() {
     },
   });
 
-  splitChart = new Chart(dom.splitChartCanvas, {
+  splitChart = new ChartLib(dom.splitChartCanvas, {
     type: "radar",
     data: {
       labels: SPLIT_KEYS.map((key) => SPLIT_LABELS[key]),
@@ -350,7 +355,8 @@ async function bootstrap() {
     introMotion();
   } catch (error) {
     console.error(error);
-    dom.athleteList.innerHTML = '<div class="empty-state">Unable to load comparison data.</div>';
+    const reason = error instanceof Error ? error.message : "unknown error";
+    dom.athleteList.innerHTML = `<div class="empty-state">Unable to load comparison data. (${escapeHtml(reason)})</div>`;
     dom.tableBody.innerHTML = '<tr><td colspan="10" class="muted">Dataset failed to load.</td></tr>';
   }
 }

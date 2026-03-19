@@ -196,7 +196,11 @@ function normalizeAthlete(row, rowIndex) {
 }
 
 function assertStorage() {
-  return typeof window !== "undefined" && window.localStorage;
+  try {
+    return typeof window !== "undefined" && Boolean(window.localStorage);
+  } catch {
+    return false;
+  }
 }
 
 export async function loadAthletes({ forceReload = false } = {}) {
@@ -328,8 +332,12 @@ export function storeSelection(ids) {
   if (!assertStorage()) {
     return;
   }
-  const normalized = Array.from(new Set(ids)).slice(0, 24);
-  window.localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(normalized));
+  try {
+    const normalized = Array.from(new Set(ids)).slice(0, 24);
+    window.localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(normalized));
+  } catch {
+    // Ignore storage failures (private mode / policy restrictions).
+  }
 }
 
 export function splitPercentages(athlete) {
