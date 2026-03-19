@@ -25,7 +25,7 @@ const dom = {
   resultCount: document.getElementById("cmpResultCount"),
   tableBody: document.querySelector("#comparisonTable tbody"),
   totalChartCanvas: document.getElementById("totalChart"),
-  splitChartCanvas: document.getElementById("splitChart"),
+  splitBreakdown: document.getElementById("splitBreakdown"),
 };
 
 const state = {
@@ -35,7 +35,6 @@ const state = {
 };
 
 let totalChart = null;
-let splitChart = null;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -167,20 +166,78 @@ function renderTable() {
     .join("");
 }
 
+function renderSplitBreakdown(selected) {
+  if (!selected.length) {
+    dom.splitBreakdown.innerHTML = '<div class="empty-state">Select athletes to view split breakdown.</div>';
+    return;
+  }
+
+  dom.splitBreakdown.innerHTML = SPLIT_KEYS.map((splitKey) => {
+    const rows = selected
+      .map((athlete) => ({
+        athlete,
+        seconds: athlete[`${splitKey}Sec`],
+      }))
+      .filter((entry) => Number.isFinite(entry.seconds) && entry.seconds > 0)
+      .sort((a, b) => a.seconds - b.seconds);
+
+    if (!rows.length) {
+      return `
+        <section class="split-group">
+          <div class="split-group-head">
+            <h4>${SPLIT_LABELS[splitKey]}</h4>
+            <p>No valid split values.</p>
+          </div>
+        </section>
+      `;
+    }
+
+    const min = rows[0].seconds;
+    const max = rows[rows.length - 1].seconds;
+
+    const rowMarkup = rows
+      .map((entry, index) => {
+        const normalized = max === min ? 1 : (max - entry.seconds) / (max - min);
+        const width = 24 + normalized * 76; // shorter time => longer bar
+        return `
+          <div class="split-item-row">
+            <div class="split-athlete">${escapeHtml(shortName(entry.athlete.athleteName))}</div>
+            <div class="split-bar-track">
+              <div class="split-bar-fill" style="width: ${width.toFixed(2)}%"></div>
+            </div>
+            <div class="split-time-block">
+              <span>#${index + 1}</span>
+              <strong>${formatDuration(entry.seconds)}</strong>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+
+    return `
+      <section class="split-group">
+        <div class="split-group-head">
+          <h4>${SPLIT_LABELS[splitKey]}</h4>
+          <p>獨立刻度：最快 ${formatDuration(min)} · 最慢 ${formatDuration(max)}</p>
+        </div>
+        <div class="split-group-rows">${rowMarkup}</div>
+      </section>
+    `;
+  }).join("");
+}
+
 function renderCharts() {
   const selected = selectedAthletes();
   const ChartLib = window.Chart;
-
-  if (!ChartLib) {
-    return;
-  }
 
   if (totalChart) {
     totalChart.destroy();
   }
 
-  if (splitChart) {
-    splitChart.destroy();
+  renderSplitBreakdown(selected);
+
+  if (!ChartLib) {
+    return;
   }
 
   totalChart = new ChartLib(dom.totalChartCanvas, {
@@ -208,41 +265,6 @@ function renderCharts() {
         y: {
           ticks: { color: "#deefff" },
           grid: { display: false },
-        },
-      },
-      plugins: {
-        legend: { labels: { color: "#eff9ff" } },
-      },
-      animation: { duration: 760, easing: "easeOutQuart" },
-    },
-  });
-
-  splitChart = new ChartLib(dom.splitChartCanvas, {
-    type: "radar",
-    data: {
-      labels: SPLIT_KEYS.map((key) => SPLIT_LABELS[key]),
-      datasets: selected.map((athlete, index) => ({
-        label: shortName(athlete.athleteName),
-        data: SPLIT_KEYS.map((key) => {
-          const value = athlete[`${key}Sec`];
-          return Number.isFinite(value) ? Number((value / 60).toFixed(1)) : null;
-        }),
-        fill: true,
-        backgroundColor: `${palette[index % palette.length]}2a`,
-        borderColor: palette[index % palette.length],
-        pointBackgroundColor: palette[index % palette.length],
-        borderWidth: 2,
-      })),
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        r: {
-          angleLines: { color: "rgba(173,197,214,0.22)" },
-          grid: { color: "rgba(173,197,214,0.2)" },
-          pointLabels: { color: "#deefff" },
-          ticks: { color: "#b9d4e8", backdropColor: "transparent" },
         },
       },
       plugins: {
