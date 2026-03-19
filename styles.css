@@ -479,6 +479,10 @@ select:focus {
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
+.athlete-row.has-split-column {
+  grid-template-columns: auto minmax(160px, 1fr) auto auto auto;
+}
+
 .athlete-row:hover {
   transform: translateY(-2px);
   border-color: rgba(173, 197, 214, 0.45);

@@ -144,11 +144,29 @@ function renderAthleteList() {
     return;
   }
 
+  const splitColumnMap = {
+    swim: { label: "Swim", key: "swimSec" },
+    bike: { label: "Bike", key: "bikeSec" },
+    run: { label: "Run", key: "runSec" },
+  };
+  const splitColumn = splitColumnMap[dom.sortSelect.value] ?? null;
+
   dom.athleteList.innerHTML = state.filteredAthletes
     .map((athlete) => {
       const selected = state.selectedIds.has(athlete.id);
+      const splitMetric = splitColumn
+        ? `
+          <div class="mini-metric">
+            <span>${splitColumn.label}</span>
+            <strong>${formatDuration(athlete[splitColumn.key])}</strong>
+          </div>
+        `
+        : "";
+
       return `
-        <article class="athlete-row ${selected ? "selected" : ""}" data-id="${escapeHtml(athlete.id)}">
+        <article class="athlete-row ${selected ? "selected" : ""} ${splitColumn ? "has-split-column" : ""}" data-id="${escapeHtml(
+          athlete.id,
+        )}">
           <label class="check-wrap">
             <input type="checkbox" data-id="${escapeHtml(athlete.id)}" ${selected ? "checked" : ""} />
           </label>
@@ -160,6 +178,7 @@ function renderAthleteList() {
             <span>Overall</span>
             <strong>${formatRank(athlete.overallRank)}</strong>
           </div>
+          ${splitMetric}
           <div class="mini-metric">
             <span>Total</span>
             <strong>${formatDuration(athlete.totalSec)}</strong>
