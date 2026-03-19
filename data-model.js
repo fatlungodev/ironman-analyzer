@@ -1,4 +1,4 @@
-const DATASET_PATH = "/data/hengqin-results.txt";
+const DATASET_PATH = `${import.meta.env.BASE_URL}data/hengqin-results.txt`;
 const SELECTION_STORAGE_KEY = "ironman:selected-athletes";
 
 export const SPLIT_KEYS = ["swim", "bike", "run", "t1", "t2"];
