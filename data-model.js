@@ -1,6 +1,7 @@
 const DATASET_PATH = `${import.meta.env.BASE_URL}data/hengqin-results.txt`;
 const SELECTION_STORAGE_KEY = "ironman:selected-athletes";
 export const MAX_SELECTION = 10;
+const UNKNOWN_COUNTRY_FILTER = "unknow";
 
 export const SPLIT_KEYS = ["swim", "bike", "run", "t1", "t2"];
 export const SPLIT_LABELS = {
@@ -272,7 +273,11 @@ export function shortName(name) {
 
 export function getFilterValues(athletes) {
   const divisions = [...new Set(athletes.map((athlete) => athlete.division).filter((value) => value && value !== "--"))].sort();
+  const hasUnknownCountry = athletes.some((athlete) => athlete.country === "--");
   const countries = [...new Set(athletes.map((athlete) => athlete.country).filter((value) => value && value !== "--"))].sort();
+  if (hasUnknownCountry) {
+    countries.push(UNKNOWN_COUNTRY_FILTER);
+  }
   const genderOrder = { Male: 0, Female: 1, Unknown: 2 };
   const genders = [...new Set(athletes.map((athlete) => athlete.gender).filter((value) => value))]
     .sort((a, b) => (genderOrder[a] ?? 99) - (genderOrder[b] ?? 99) || a.localeCompare(b));
@@ -287,7 +292,8 @@ export function applyFiltersAndSort(athletes, { searchText = "", division = "all
     const matchesSearch = !query || searchTarget.includes(query);
     const matchesDivision = division === "all" || athlete.division === division;
     const matchesGender = gender === "all" || athlete.gender === gender;
-    const matchesCountry = country === "all" || athlete.country === country;
+    const matchesCountry =
+      country === "all" || (country === UNKNOWN_COUNTRY_FILTER ? athlete.country === "--" : athlete.country === country);
     return matchesSearch && matchesDivision && matchesGender && matchesCountry;
   });
 
