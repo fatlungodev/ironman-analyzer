@@ -300,6 +300,9 @@ export function computeOverview(athletes) {
   const validRuns = athletes.filter((athlete) => isPositiveTime(athlete.runSec));
 
   const averageTotal = validTotals.reduce((sum, athlete) => sum + athlete.totalSec, 0) / Math.max(1, validTotals.length);
+  const averageSwim = validSwims.reduce((sum, athlete) => sum + athlete.swimSec, 0) / Math.max(1, validSwims.length);
+  const averageBike = validBikes.reduce((sum, athlete) => sum + athlete.bikeSec, 0) / Math.max(1, validBikes.length);
+  const averageRun = validRuns.reduce((sum, athlete) => sum + athlete.runSec, 0) / Math.max(1, validRuns.length);
   const fastest = [...validTotals].sort((a, b) => a.totalSec - b.totalSec)[0] || null;
   const bestSwim = [...validSwims].sort((a, b) => a.swimSec - b.swimSec)[0] || null;
   const bestBike = [...validBikes].sort((a, b) => a.bikeSec - b.bikeSec)[0] || null;
@@ -308,6 +311,9 @@ export function computeOverview(athletes) {
   return {
     participants: athletes.length,
     averageTotal,
+    averageSwim,
+    averageBike,
+    averageRun,
     fastest,
     bestSwim,
     bestBike,

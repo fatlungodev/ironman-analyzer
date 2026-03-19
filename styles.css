@@ -264,6 +264,27 @@ a {
   color: var(--text-soft);
 }
 
+.avg-splits {
+  margin-top: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.avg-splits p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.avg-splits p strong {
+  color: var(--text-main);
+  font-size: 0.76rem;
+}
+
 .inventory-layout {
   display: grid;
   gap: 12px;

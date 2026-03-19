@@ -93,6 +93,9 @@ function renderKpis() {
   const overview = computeOverview(state.filteredAthletes);
   const hasFilteredResults = overview.participants > 0;
   const averageDisplay = hasFilteredResults ? formatDuration(overview.averageTotal) : "--";
+  const averageSwim = hasFilteredResults ? formatDuration(overview.averageSwim) : "--";
+  const averageBike = hasFilteredResults ? formatDuration(overview.averageBike) : "--";
+  const averageRun = hasFilteredResults ? formatDuration(overview.averageRun) : "--";
 
   dom.kpiGrid.innerHTML = `
     <article class="kpi-card">
@@ -103,6 +106,11 @@ function renderKpis() {
     <article class="kpi-card">
       <p class="label">Average Finish</p>
       <p class="value">${averageDisplay}</p>
+      <div class="avg-splits">
+        <p><span>Swim</span><strong>${averageSwim}</strong></p>
+        <p><span>Bike</span><strong>${averageBike}</strong></p>
+        <p><span>Run</span><strong>${averageRun}</strong></p>
+      </div>
     </article>
     <article class="kpi-card">
       <p class="label">Fastest Overall</p>
