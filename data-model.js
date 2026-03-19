@@ -1,5 +1,6 @@
 const DATASET_PATH = `${import.meta.env.BASE_URL}data/hengqin-results.txt`;
 const SELECTION_STORAGE_KEY = "ironman:selected-athletes";
+export const MAX_SELECTION = 10;
 
 export const SPLIT_KEYS = ["swim", "bike", "run", "t1", "t2"];
 export const SPLIT_LABELS = {
@@ -272,7 +273,9 @@ export function shortName(name) {
 export function getFilterValues(athletes) {
   const divisions = [...new Set(athletes.map((athlete) => athlete.division).filter((value) => value && value !== "--"))].sort();
   const countries = [...new Set(athletes.map((athlete) => athlete.country).filter((value) => value && value !== "--"))].sort();
-  const genders = [...new Set(athletes.map((athlete) => athlete.gender).filter((value) => value && value !== "Unknown"))].sort();
+  const genderOrder = { Male: 0, Female: 1, Unknown: 2 };
+  const genders = [...new Set(athletes.map((athlete) => athlete.gender).filter((value) => value))]
+    .sort((a, b) => (genderOrder[a] ?? 99) - (genderOrder[b] ?? 99) || a.localeCompare(b));
   return { divisions, countries, genders };
 }
 
@@ -357,7 +360,7 @@ export function storeSelection(ids) {
     return;
   }
   try {
-    const normalized = Array.from(new Set(ids)).slice(0, 24);
+    const normalized = Array.from(new Set(ids)).slice(0, MAX_SELECTION);
     window.localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(normalized));
   } catch {
     // Ignore storage failures (private mode / policy restrictions).

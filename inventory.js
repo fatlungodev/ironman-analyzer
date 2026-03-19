@@ -1,4 +1,5 @@
 import {
+  MAX_SELECTION,
   SPLIT_KEYS,
   SPLIT_LABELS,
   applyFiltersAndSort,
@@ -12,8 +13,6 @@ import {
   splitPercentages,
   storeSelection,
 } from "./data-model.js";
-
-const MAX_SELECTION = 10;
 
 const dom = {
   sourceLabel: document.getElementById("sourceLabel"),

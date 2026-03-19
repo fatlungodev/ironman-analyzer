@@ -1,4 +1,5 @@
 import {
+  MAX_SELECTION,
   SPLIT_KEYS,
   SPLIT_LABELS,
   applyFiltersAndSort,
@@ -11,7 +12,6 @@ import {
   storeSelection,
 } from "./data-model.js";
 
-const MAX_SELECTION = 8;
 const palette = ["#ff7e4f", "#1fd6c0", "#ffd06f", "#9ba9ff", "#94f2ca", "#ff97b3", "#88d4ff", "#bce784"];
 
 const dom = {
@@ -38,6 +38,7 @@ const state = {
   selectedIds: new Set(),
   splitBenchmarks: {},
   pickerCollapsed: false,
+  viewportSignature: "",
 };
 
 let totalChart = null;
@@ -86,6 +87,12 @@ function setSelection(ids) {
 
 function isMobileViewport() {
   return window.matchMedia("(max-width: 700px)").matches;
+}
+
+function getViewportSignature() {
+  const mobile = window.matchMedia("(max-width: 700px)").matches ? "mobile" : "desktop";
+  const verySmall = window.matchMedia("(max-width: 430px)").matches ? "small" : "regular";
+  return `${mobile}-${verySmall}`;
 }
 
 function updatePickerCollapsed(collapsed) {
@@ -254,6 +261,7 @@ function renderCharts() {
   const ChartLib = window.Chart;
   const isMobile = isMobileViewport();
   const isVerySmall = window.matchMedia("(max-width: 430px)").matches;
+  state.viewportSignature = getViewportSignature();
 
   if (!ChartLib) {
     return;
@@ -465,8 +473,14 @@ function bindEvents() {
   });
 
   window.addEventListener("resize", () => {
+    const nextViewportSignature = getViewportSignature();
+
     if (!isMobileViewport() && state.pickerCollapsed) {
       updatePickerCollapsed(false);
+    }
+
+    if (nextViewportSignature !== state.viewportSignature) {
+      renderCharts();
     }
   });
 }

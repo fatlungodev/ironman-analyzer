@@ -11,7 +11,11 @@ Interactive two-page race analytics web app for preloaded IRONMAN 70.3 result da
 ### 1) Athlete Inventory (`index.html`)
 - Full athlete roster browsing from preloaded dataset
 - Search by name or BIB
-- Filter by division and country
+- Filter by division, gender, and country
+  - Gender is inferred from division prefix:
+    - `M...` => `Male`
+    - `F...` => `Female`
+    - missing/other => `Unknown`
 - Sort by overall rank, total time, swim, bike, run
 - Multi-select athletes and persist selection
 - Detailed cards for selected athletes:
@@ -28,9 +32,11 @@ Interactive two-page race analytics web app for preloaded IRONMAN 70.3 result da
 ### 2) Comparison Lab (`comparison.html`)
 - Shares selected athletes from Inventory via `localStorage`
 - Athlete picker with filter/search
+- Filter by division, gender, and country
 - Total Time horizontal bar chart
 - Split Breakdown 5-axis radar chart
 - Side-by-side comparison table for selected athletes
+- Mobile card view for side-by-side details
 
 ### 3) Split Breakdown Radar Benchmark
 - Radar chart uses **preloaded full dataset** as benchmark source
@@ -71,7 +77,7 @@ Interactive two-page race analytics web app for preloaded IRONMAN 70.3 result da
   - `public/data/hengqin-results.txt` (TSV plain text, preloaded at startup)
 
 ## Runtime Requirements
-- Node.js (recommended: 20+)
+- Node.js (recommended: 24+)
 - npm (recommended: 10+)
 - Python 3 (for dataset regeneration script)
 - Modern browser with ES module support
