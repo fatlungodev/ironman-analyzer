@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IRONMAN Analyzer | Comparison Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Urbanist:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient">
+      <span class="ambient__flare ambient__flare--one"></span>
+      <span class="ambient__flare ambient__flare--two"></span>
+      <span class="ambient__flare ambient__flare--three"></span>
+      <span class="ambient__mesh"></span>
+    </div>
+
+    <header class="site-top">
+      <a class="brand" href="./index.html">IRONMAN Analyzer</a>
+      <nav class="top-nav">
+        <a class="nav-link" href="./index.html">Athlete Inventory</a>
+        <a class="nav-link active" href="./comparison.html">Comparison Lab</a>
+      </nav>
+      <a class="source-pill" href="./index.html">Manage Selection</a>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">Page 2</p>
+          <h1>Comparison Lab</h1>
+          <p class="hero-text">
+            Visualize selected athletes with split-level analytics and a side-by-side race performance table.
+          </p>
+        </div>
+      </section>
+
+      <section class="comparison-layout">
+        <aside class="panel picker-panel">
+          <div class="panel-title-row">
+            <h2>Pick Athletes</h2>
+            <button id="cmpClearBtn" class="text-btn" type="button">Clear</button>
+          </div>
+
+          <div class="form-stack">
+            <label class="field">
+              <span>Search Athlete</span>
+              <input id="cmpSearchInput" type="search" placeholder="Name or BIB" />
+            </label>
+            <label class="field">
+              <span>Division</span>
+              <select id="cmpDivisionFilter">
+                <option value="all">All Divisions</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Country</span>
+              <select id="cmpCountryFilter">
+                <option value="all">All Countries</option>
+              </select>
+            </label>
+          </div>
+
+          <p id="cmpSelectionCount" class="muted">0 selected</p>
+          <div id="cmpSelectedPills" class="pill-wrap"></div>
+
+          <div id="cmpAthleteList" class="athlete-list compact"></div>
+        </aside>
+
+        <section class="panel analytics-panel">
+          <div class="charts-grid">
+            <article class="chart-card">
+              <h3>Total Time (minutes)</h3>
+              <canvas id="totalChart"></canvas>
+            </article>
+            <article class="chart-card">
+              <h3>Split Breakdown</h3>
+              <canvas id="splitChart"></canvas>
+            </article>
+          </div>
+
+          <div class="table-shell">
+            <div class="panel-title-row compact">
+              <h3>Side-by-Side Details</h3>
+              <p id="cmpResultCount" class="muted">0 athletes</p>
+            </div>
+            <div class="table-wrap">
+              <table id="comparisonTable">
+                <thead>
+                  <tr>
+                    <th>Athlete</th>
+                    <th>Country</th>
+                    <th>Division</th>
+                    <th>Overall</th>
+                    <th>Total</th>
+                    <th>Swim</th>
+                    <th>Bike</th>
+                    <th>Run</th>
+                    <th>T1</th>
+                    <th>T2</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script type="module" src="./comparison.js"></script>
+  </body>
+</html>
