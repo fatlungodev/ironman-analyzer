@@ -5,7 +5,7 @@ const UNKNOWN_COUNTRY_FILTER = "unknow";
 const DATASET_DEFINITIONS = [
   {
     id: "ironman-hengqin-70-3",
-    label: "Ironman Hengqin 70.3",
+    label: "2026 Ironman Hengqin 70.3",
     path: `${import.meta.env.BASE_URL}data/hengqin-results.txt`,
   },
 ];
