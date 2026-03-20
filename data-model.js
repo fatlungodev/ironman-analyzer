@@ -1,7 +1,15 @@
-const DATASET_PATH = `${import.meta.env.BASE_URL}data/hengqin-results.txt`;
-const SELECTION_STORAGE_KEY = "ironman:selected-athletes";
+const ACTIVE_DATASET_STORAGE_KEY = "ironman:active-dataset";
+const LEGACY_SELECTION_STORAGE_KEY = "ironman:selected-athletes";
 export const MAX_SELECTION = 10;
 const UNKNOWN_COUNTRY_FILTER = "unknow";
+const DATASET_DEFINITIONS = [
+  {
+    id: "ironman-hengqin-70-3",
+    label: "Ironman Hengqin 70.3",
+    path: `${import.meta.env.BASE_URL}data/hengqin-results.txt`,
+  },
+];
+const DEFAULT_DATASET_ID = DATASET_DEFINITIONS[0]?.id;
 
 export const SPLIT_KEYS = ["swim", "bike", "run", "t1", "t2"];
 export const SPLIT_LABELS = {
@@ -12,7 +20,7 @@ export const SPLIT_LABELS = {
   t2: "T2",
 };
 
-let cachedAthletes = null;
+const cachedAthletesByDataset = new Map();
 
 function normalizeHeader(value) {
   return String(value ?? "")
@@ -221,12 +229,84 @@ function assertStorage() {
   }
 }
 
-export async function loadAthletes({ forceReload = false } = {}) {
-  if (cachedAthletes && !forceReload) {
-    return cachedAthletes;
+function parseSelectionArray(rawValue) {
+  if (rawValue === null) {
+    return null;
   }
 
-  const response = await fetch(DATASET_PATH);
+  const parsed = JSON.parse(rawValue);
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+
+  return parsed.filter((value) => typeof value === "string");
+}
+
+function selectionStorageKey(datasetId) {
+  return `ironman:selected-athletes:${resolveDatasetId(datasetId)}`;
+}
+
+export function listDatasets() {
+  return DATASET_DEFINITIONS.map((dataset) => ({ id: dataset.id, label: dataset.label }));
+}
+
+export function resolveDatasetId(datasetId) {
+  if (!DATASET_DEFINITIONS.length) {
+    throw new Error("No datasets configured");
+  }
+
+  const match = DATASET_DEFINITIONS.find((dataset) => dataset.id === datasetId);
+  return match?.id ?? DEFAULT_DATASET_ID;
+}
+
+function getDatasetRecord(datasetId) {
+  const resolvedId = resolveDatasetId(datasetId);
+  return DATASET_DEFINITIONS.find((dataset) => dataset.id === resolvedId);
+}
+
+export function getDatasetLabel(datasetId) {
+  return getDatasetRecord(datasetId)?.label ?? "";
+}
+
+export function readStoredDatasetId() {
+  const fallback = resolveDatasetId();
+
+  if (!assertStorage()) {
+    return fallback;
+  }
+
+  try {
+    return resolveDatasetId(window.localStorage.getItem(ACTIVE_DATASET_STORAGE_KEY) ?? "");
+  } catch {
+    return fallback;
+  }
+}
+
+export function storeDatasetId(datasetId) {
+  if (!assertStorage()) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(ACTIVE_DATASET_STORAGE_KEY, resolveDatasetId(datasetId));
+  } catch {
+    // Ignore storage failures (private mode / policy restrictions).
+  }
+}
+
+export async function loadAthletes({ forceReload = false, datasetId } = {}) {
+  const resolvedDatasetId = resolveDatasetId(datasetId);
+  const resolvedDataset = getDatasetRecord(resolvedDatasetId);
+
+  if (!forceReload && cachedAthletesByDataset.has(resolvedDatasetId)) {
+    return cachedAthletesByDataset.get(resolvedDatasetId);
+  }
+
+  if (!resolvedDataset?.path) {
+    throw new Error(`Dataset configuration missing for ${resolvedDatasetId}`);
+  }
+
+  const response = await fetch(resolvedDataset.path);
   if (!response.ok) {
     throw new Error(`Unable to load dataset (${response.status})`);
   }
@@ -235,7 +315,7 @@ export async function loadAthletes({ forceReload = false } = {}) {
   const rows = parseTabSeparatedText(text);
   const athletes = rows.map((row, index) => normalizeAthlete(row, index)).filter((athlete) => !shouldIgnoreAthlete(athlete));
 
-  cachedAthletes = athletes;
+  cachedAthletesByDataset.set(resolvedDatasetId, athletes);
   return athletes;
 }
 
@@ -354,26 +434,43 @@ export function computeOverview(athletes) {
   };
 }
 
-export function readStoredSelection() {
+export function readStoredSelection(datasetId) {
   if (!assertStorage()) {
     return [];
   }
+
+  const resolvedDatasetId = resolveDatasetId(datasetId);
   try {
-    const raw = window.localStorage.getItem(SELECTION_STORAGE_KEY);
-    const parsed = JSON.parse(raw ?? "[]");
-    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "string") : [];
+    const scopedRaw = window.localStorage.getItem(selectionStorageKey(resolvedDatasetId));
+    const scopedParsed = parseSelectionArray(scopedRaw);
+    if (Array.isArray(scopedParsed)) {
+      return scopedParsed;
+    }
+
+    if (resolvedDatasetId !== DEFAULT_DATASET_ID) {
+      return [];
+    }
+
+    const legacyRaw = window.localStorage.getItem(LEGACY_SELECTION_STORAGE_KEY);
+    const legacyParsed = parseSelectionArray(legacyRaw);
+    if (!Array.isArray(legacyParsed)) {
+      return [];
+    }
+
+    window.localStorage.setItem(selectionStorageKey(resolvedDatasetId), JSON.stringify(legacyParsed));
+    return legacyParsed;
   } catch {
     return [];
   }
 }
 
-export function storeSelection(ids) {
+export function storeSelection(ids, datasetId) {
   if (!assertStorage()) {
     return;
   }
   try {
     const normalized = Array.from(new Set(ids)).slice(0, MAX_SELECTION);
-    window.localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(normalized));
+    window.localStorage.setItem(selectionStorageKey(datasetId), JSON.stringify(normalized));
   } catch {
     // Ignore storage failures (private mode / policy restrictions).
   }

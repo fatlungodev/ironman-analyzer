@@ -5,16 +5,23 @@ import {
   applyFiltersAndSort,
   formatDuration,
   formatRank,
+  getDatasetLabel,
   getFilterValues,
   loadAthletes,
+  readStoredDatasetId,
   readStoredSelection,
+  resolveDatasetId,
   shortName,
+  storeDatasetId,
   storeSelection,
 } from "./data-model.js";
 
 const palette = ["#ff7e4f", "#1fd6c0", "#ffd06f", "#9ba9ff", "#94f2ca", "#ff97b3", "#88d4ff", "#bce784"];
 
 const dom = {
+  inventoryBrandLink: document.getElementById("cmpInventoryBrandLink"),
+  inventoryNavLink: document.getElementById("cmpInventoryNavLink"),
+  manageLink: document.getElementById("cmpManageLink"),
   searchInput: document.getElementById("cmpSearchInput"),
   divisionFilter: document.getElementById("cmpDivisionFilter"),
   genderFilter: document.getElementById("cmpGenderFilter"),
@@ -33,6 +40,7 @@ const dom = {
 };
 
 const state = {
+  activeDatasetId: "",
   allAthletes: [],
   filteredAthletes: [],
   selectedIds: new Set(),
@@ -43,6 +51,55 @@ const state = {
 
 let totalChart = null;
 let splitChart = null;
+
+function readDatasetFromQuery() {
+  try {
+    const queryId = new URLSearchParams(window.location.search).get("dataset");
+    return queryId ? resolveDatasetId(queryId) : "";
+  } catch {
+    return "";
+  }
+}
+
+function syncDatasetQuery(datasetId) {
+  const resolvedId = resolveDatasetId(datasetId);
+  try {
+    const current = new URL(window.location.href);
+    if (current.searchParams.get("dataset") === resolvedId) {
+      return;
+    }
+    current.searchParams.set("dataset", resolvedId);
+    const nextRelative = `${current.pathname}${current.search}${current.hash}`;
+    window.history.replaceState({}, "", nextRelative);
+  } catch {
+    // Ignore URL update failures.
+  }
+}
+
+function buildDatasetAwareHref(path, datasetId) {
+  try {
+    const url = new URL(path, window.location.href);
+    url.searchParams.set("dataset", resolveDatasetId(datasetId));
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return path;
+  }
+}
+
+function updateInventoryLinks(datasetId) {
+  const href = buildDatasetAwareHref("./index.html", datasetId);
+  [dom.inventoryBrandLink, dom.inventoryNavLink, dom.manageLink].forEach((link) => {
+    if (link) {
+      link.setAttribute("href", href);
+    }
+  });
+
+  if (dom.manageLink) {
+    const datasetLabel = getDatasetLabel(datasetId);
+    dom.manageLink.textContent = datasetLabel ? `Manage Selection · ${datasetLabel}` : "Manage Selection";
+    dom.manageLink.setAttribute("title", datasetLabel ? `Active Dataset: ${datasetLabel}` : "Manage Selection");
+  }
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -77,7 +134,7 @@ function selectedAthletes() {
 }
 
 function syncStorage() {
-  storeSelection(Array.from(state.selectedIds));
+  storeSelection(Array.from(state.selectedIds), state.activeDatasetId);
 }
 
 function setSelection(ids) {
@@ -498,7 +555,13 @@ function introMotion() {
 
 async function bootstrap() {
   try {
-    state.allAthletes = await loadAthletes();
+    const queryDatasetId = readDatasetFromQuery();
+    state.activeDatasetId = resolveDatasetId(queryDatasetId || readStoredDatasetId());
+    storeDatasetId(state.activeDatasetId);
+    syncDatasetQuery(state.activeDatasetId);
+    updateInventoryLinks(state.activeDatasetId);
+
+    state.allAthletes = await loadAthletes({ datasetId: state.activeDatasetId });
     state.splitBenchmarks = buildSplitBenchmarks(state.allAthletes);
 
     const { divisions, genders, countries } = getFilterValues(state.allAthletes);
@@ -508,7 +571,7 @@ async function bootstrap() {
     fillSelect(dom.countryFilter, countries, "Countries");
 
     const validIds = new Set(state.allAthletes.map((athlete) => athlete.id));
-    const restored = readStoredSelection().filter((id) => validIds.has(id));
+    const restored = readStoredSelection(state.activeDatasetId).filter((id) => validIds.has(id));
 
     if (restored.length) {
       setSelection(restored);

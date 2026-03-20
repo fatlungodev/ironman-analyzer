@@ -24,9 +24,12 @@
       <a class="brand" href="./index.html">IRONMAN Analyzer</a>
       <nav class="top-nav">
         <a class="nav-link active" href="./index.html">Athlete Inventory</a>
-        <a class="nav-link" href="./comparison.html">Comparison Lab</a>
+        <a id="invComparisonNavLink" class="nav-link" href="./comparison.html">Comparison Lab</a>
       </nav>
-      <p id="sourceLabel" class="source-pill">Preloaded: Hengqin text dataset</p>
+      <label class="source-dataset">
+        <span>Dataset</span>
+        <select id="datasetSelect" class="dataset-select"></select>
+      </label>
     </header>
 
     <main class="page-shell">
@@ -41,7 +44,7 @@
         </div>
         <div class="hero-actions">
           <a id="heroCompareLink" class="cta-link cta-link-secondary" href="./comparison.html">Compare 1 selected athlete</a>
-          <a class="cta-link" href="./comparison.html">Open Comparison Lab</a>
+          <a id="openComparisonLink" class="cta-link" href="./comparison.html">Open Comparison Lab</a>
         </div>
       </section>
 

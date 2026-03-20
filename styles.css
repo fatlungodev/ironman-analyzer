@@ -168,6 +168,34 @@ a {
   text-overflow: ellipsis;
 }
 
+.source-dataset {
+  border: 1px solid rgba(173, 197, 214, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+  max-width: 340px;
+}
+
+.source-dataset span {
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.dataset-select {
+  border: 1px solid rgba(173, 197, 214, 0.3);
+  border-radius: 999px;
+  background: rgba(8, 23, 36, 0.88);
+  color: var(--text-main);
+  padding: 6px 10px;
+  min-height: 30px;
+  font-size: 0.78rem;
+  width: min(230px, 48vw);
+}
+
 .page-shell {
   position: relative;
   z-index: 1;
@@ -964,10 +992,19 @@ tbody tr:hover {
     gap: 6px;
   }
 
-  .source-pill {
+  .source-pill,
+  .source-dataset {
     max-width: none;
     width: 100%;
     text-align: center;
+  }
+
+  .source-dataset {
+    justify-content: center;
+  }
+
+  .dataset-select {
+    width: min(380px, 86vw);
   }
 
   .athlete-list,
@@ -1192,9 +1229,16 @@ tbody tr:hover {
     padding: 7px 10px;
   }
 
-  .source-pill {
+  .source-pill,
+  .source-dataset {
     font-size: 0.72rem;
     padding: 7px 10px;
+  }
+
+  .dataset-select {
+    width: min(260px, 72vw);
+    min-height: 32px;
+    font-size: 0.76rem;
   }
 
   .hero {
