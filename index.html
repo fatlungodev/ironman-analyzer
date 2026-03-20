@@ -39,12 +39,15 @@
             Comparison Lab.
           </p>
         </div>
-        <a class="cta-link" href="./comparison.html">Open Comparison Lab</a>
+        <div class="hero-actions">
+          <a id="heroCompareLink" class="cta-link cta-link-secondary" href="./comparison.html">Compare 1 selected athlete</a>
+          <a class="cta-link" href="./comparison.html">Open Comparison Lab</a>
+        </div>
       </section>
 
       <section id="kpiGrid" class="kpi-grid"></section>
 
-      <section class="inventory-layout">
+      <section id="inventoryLayout" class="inventory-layout">
         <aside class="panel filter-panel">
           <div class="panel-title-row">
             <h2>Filters</h2>
@@ -83,6 +86,8 @@
                 <option value="swim">Swim Split</option>
                 <option value="bike">Bike Split</option>
                 <option value="run">Run Split</option>
+                <option value="t1">T1 Split</option>
+                <option value="t2">T2 Split</option>
               </select>
             </label>
           </div>
@@ -101,15 +106,31 @@
         <section class="panel roster-panel">
           <div class="panel-title-row">
             <h2>Athlete Roster</h2>
-            <p id="resultCount" class="muted">0 results</p>
+            <div class="roster-actions">
+              <button id="toggleColumnsBtn" class="text-btn" type="button" aria-expanded="false">Columns</button>
+              <button id="expandDetailsBtn" class="text-btn" type="button" hidden>Expand Details</button>
+              <p id="resultCount" class="muted">0 results</p>
+            </div>
+          </div>
+          <div id="columnPicker" class="column-picker" hidden>
+            <label><input type="checkbox" data-column="overall" checked /> Overall</label>
+            <label><input type="checkbox" data-column="swim" /> Swim</label>
+            <label><input type="checkbox" data-column="bike" /> Bike</label>
+            <label><input type="checkbox" data-column="run" /> Run</label>
+            <label><input type="checkbox" data-column="t1" /> T1</label>
+            <label><input type="checkbox" data-column="t2" /> T2</label>
+            <label><input type="checkbox" data-column="total" checked /> Total</label>
           </div>
           <div id="athleteList" class="athlete-list"></div>
         </section>
 
-        <section class="panel detail-panel">
+        <section id="detailPanel" class="panel detail-panel">
           <div class="panel-title-row">
             <h2>Selected Athlete Details</h2>
-            <p id="detailCount" class="muted">0 detail cards</p>
+            <div class="detail-actions">
+              <button id="toggleDetailsBtn" class="text-btn" type="button">Collapse</button>
+              <p id="detailCount" class="muted">0 detail cards</p>
+            </div>
           </div>
           <div id="selectedDetails" class="detail-wall"></div>
         </section>

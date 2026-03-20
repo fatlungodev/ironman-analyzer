@@ -314,6 +314,12 @@ export function applyFiltersAndSort(athletes, { searchText = "", division = "all
     run: (a, b) =>
       (isPositiveTime(a.runSec) ? a.runSec : Number.MAX_SAFE_INTEGER) -
       (isPositiveTime(b.runSec) ? b.runSec : Number.MAX_SAFE_INTEGER),
+    t1: (a, b) =>
+      (isPositiveTime(a.t1Sec) ? a.t1Sec : Number.MAX_SAFE_INTEGER) -
+      (isPositiveTime(b.t1Sec) ? b.t1Sec : Number.MAX_SAFE_INTEGER),
+    t2: (a, b) =>
+      (isPositiveTime(a.t2Sec) ? a.t2Sec : Number.MAX_SAFE_INTEGER) -
+      (isPositiveTime(b.t2Sec) ? b.t2Sec : Number.MAX_SAFE_INTEGER),
   };
 
   filtered.sort(sorters[sortBy] || sorters.overall);

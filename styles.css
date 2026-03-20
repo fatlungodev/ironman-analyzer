@@ -239,6 +239,19 @@ a {
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
+.hero-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cta-link-secondary {
+  border-color: rgba(255, 126, 79, 0.58);
+  background: rgba(255, 126, 79, 0.16);
+}
+
 .cta-link:hover {
   transform: translateY(-2px);
   border-color: rgba(31, 214, 192, 0.74);
@@ -302,6 +315,18 @@ a {
   grid-template-columns: 300px 1.02fr 1.28fr;
 }
 
+.inventory-layout.details-collapsed {
+  grid-template-columns: 300px minmax(0, 1fr);
+}
+
+.inventory-layout.details-collapsed .roster-panel {
+  grid-column: 2 / -1;
+}
+
+.inventory-layout.details-collapsed .detail-panel {
+  display: none;
+}
+
 .comparison-layout {
   display: grid;
   gap: 12px;
@@ -347,6 +372,52 @@ a {
 
 .panel-title-row h3 {
   font-size: 1rem;
+}
+
+.detail-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.roster-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.roster-actions .muted,
+.detail-actions .muted {
+  margin: 0;
+}
+
+.column-picker {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+  border: 1px solid rgba(173, 197, 214, 0.2);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.column-picker[hidden] {
+  display: none !important;
+}
+
+.column-picker label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--text-soft);
+}
+
+.column-picker input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-cool);
 }
 
 .muted {
@@ -473,14 +544,10 @@ select:focus {
   padding: 10px;
   background: rgba(255, 255, 255, 0.05);
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto minmax(160px, 1fr) repeat(var(--metric-cols, 2), minmax(72px, auto));
   gap: 10px;
   align-items: center;
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-
-.athlete-row.has-split-column {
-  grid-template-columns: auto minmax(160px, 1fr) auto auto auto;
 }
 
 .athlete-row:hover {
@@ -547,6 +614,11 @@ select:focus {
   max-height: 720px;
   overflow: auto;
   padding-right: 4px;
+}
+
+.detail-panel.is-collapsed .detail-wall,
+.detail-panel.is-collapsed #detailCount {
+  display: none;
 }
 
 .empty-state {
@@ -786,8 +858,16 @@ tbody tr:hover {
     grid-template-columns: 290px 1fr;
   }
 
+  .inventory-layout.details-collapsed {
+    grid-template-columns: 290px 1fr;
+  }
+
   .detail-panel {
     grid-column: 1 / -1;
+  }
+
+  .inventory-layout.details-collapsed .roster-panel {
+    grid-column: auto;
   }
 
   .comparison-layout {
@@ -817,6 +897,11 @@ tbody tr:hover {
     align-items: start;
     flex-direction: column;
     padding: 18px;
+  }
+
+  .hero-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .kpi-grid {
@@ -926,6 +1011,20 @@ tbody tr:hover {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
+  }
+
+  .detail-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .roster-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .column-picker {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .panel-title-row.compact {

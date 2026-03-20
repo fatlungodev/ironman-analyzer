@@ -21,11 +21,18 @@ const dom = {
   genderFilter: document.getElementById("genderFilter"),
   countryFilter: document.getElementById("countryFilter"),
   sortSelect: document.getElementById("sortSelect"),
+  inventoryLayout: document.getElementById("inventoryLayout"),
   kpiGrid: document.getElementById("kpiGrid"),
+  heroCompareLink: document.getElementById("heroCompareLink"),
+  toggleColumnsBtn: document.getElementById("toggleColumnsBtn"),
+  columnPicker: document.getElementById("columnPicker"),
   athleteList: document.getElementById("athleteList"),
   resultCount: document.getElementById("resultCount"),
+  expandDetailsBtn: document.getElementById("expandDetailsBtn"),
   selectedCountLine: document.getElementById("selectedCountLine"),
   selectedPills: document.getElementById("selectedPills"),
+  detailPanel: document.getElementById("detailPanel"),
+  toggleDetailsBtn: document.getElementById("toggleDetailsBtn"),
   selectedDetails: document.getElementById("selectedDetails"),
   detailCount: document.getElementById("detailCount"),
   compareLink: document.getElementById("compareLink"),
@@ -37,7 +44,28 @@ const state = {
   allAthletes: [],
   filteredAthletes: [],
   selectedIds: new Set(),
+  detailsCollapsed: false,
+  columnPickerOpen: false,
+  visibleColumns: {
+    overall: true,
+    swim: false,
+    bike: false,
+    run: false,
+    t1: false,
+    t2: false,
+    total: true,
+  },
 };
+
+const ROSTER_METRIC_COLUMNS = [
+  { key: "overall", label: "Overall", format: (athlete) => formatRank(athlete.overallRank) },
+  { key: "swim", label: "Swim", format: (athlete) => formatDuration(athlete.swimSec) },
+  { key: "bike", label: "Bike", format: (athlete) => formatDuration(athlete.bikeSec) },
+  { key: "run", label: "Run", format: (athlete) => formatDuration(athlete.runSec) },
+  { key: "t1", label: "T1", format: (athlete) => formatDuration(athlete.t1Sec) },
+  { key: "t2", label: "T2", format: (athlete) => formatDuration(athlete.t2Sec) },
+  { key: "total", label: "Total", format: (athlete) => formatDuration(athlete.totalSec) },
+];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -78,6 +106,37 @@ function syncStoredSelection() {
 function setSelection(ids) {
   state.selectedIds = new Set(ids.slice(0, MAX_SELECTION));
   syncStoredSelection();
+}
+
+function updateColumnPicker(open) {
+  state.columnPickerOpen = Boolean(open);
+  dom.columnPicker.hidden = !state.columnPickerOpen;
+  dom.toggleColumnsBtn.setAttribute("aria-expanded", String(state.columnPickerOpen));
+}
+
+function syncColumnPickerUI() {
+  dom.columnPicker.querySelectorAll("input[type='checkbox'][data-column]").forEach((checkbox) => {
+    checkbox.checked = Boolean(state.visibleColumns[checkbox.dataset.column]);
+  });
+}
+
+function ensureSortColumnVisible() {
+  const sortColumnMap = { swim: "swim", bike: "bike", run: "run", t1: "t1", t2: "t2" };
+  const sortColumn = sortColumnMap[dom.sortSelect.value];
+  if (sortColumn && !state.visibleColumns[sortColumn]) {
+    state.visibleColumns[sortColumn] = true;
+    syncColumnPickerUI();
+  }
+}
+
+function updateDetailsCollapsed(collapsed) {
+  state.detailsCollapsed = Boolean(collapsed);
+  dom.inventoryLayout.classList.toggle("details-collapsed", state.detailsCollapsed);
+  dom.detailPanel.classList.toggle("is-collapsed", state.detailsCollapsed);
+  dom.toggleDetailsBtn.textContent = "Collapse";
+  dom.toggleDetailsBtn.setAttribute("aria-expanded", "true");
+  dom.expandDetailsBtn.hidden = !state.detailsCollapsed;
+  dom.expandDetailsBtn.setAttribute("aria-expanded", String(!state.detailsCollapsed));
 }
 
 function applyFilters() {
@@ -144,27 +203,24 @@ function renderAthleteList() {
     return;
   }
 
-  const splitColumnMap = {
-    swim: { label: "Swim", key: "swimSec" },
-    bike: { label: "Bike", key: "bikeSec" },
-    run: { label: "Run", key: "runSec" },
-  };
-  const splitColumn = splitColumnMap[dom.sortSelect.value] ?? null;
+  const metricColumns = ROSTER_METRIC_COLUMNS.filter((column) => state.visibleColumns[column.key]);
 
   dom.athleteList.innerHTML = state.filteredAthletes
     .map((athlete) => {
       const selected = state.selectedIds.has(athlete.id);
-      const splitMetric = splitColumn
-        ? `
+      const metricCells = metricColumns
+        .map(
+          (column) => `
           <div class="mini-metric">
-            <span>${splitColumn.label}</span>
-            <strong>${formatDuration(athlete[splitColumn.key])}</strong>
+            <span>${column.label}</span>
+            <strong>${column.format(athlete)}</strong>
           </div>
-        `
-        : "";
+        `,
+        )
+        .join("");
 
       return `
-        <article class="athlete-row ${selected ? "selected" : ""} ${splitColumn ? "has-split-column" : ""}" data-id="${escapeHtml(
+        <article class="athlete-row ${selected ? "selected" : ""}" style="--metric-cols:${metricColumns.length}" data-id="${escapeHtml(
           athlete.id,
         )}">
           <label class="check-wrap">
@@ -174,15 +230,7 @@ function renderAthleteList() {
             <strong>${escapeHtml(athlete.athleteName)}</strong>
             <span>${escapeHtml(athlete.country)} · BIB ${escapeHtml(athlete.bib)} · ${escapeHtml(athlete.division)}</span>
           </div>
-          <div class="mini-metric">
-            <span>Overall</span>
-            <strong>${formatRank(athlete.overallRank)}</strong>
-          </div>
-          ${splitMetric}
-          <div class="mini-metric">
-            <span>Total</span>
-            <strong>${formatDuration(athlete.totalSec)}</strong>
-          </div>
+          ${metricCells}
         </article>
       `;
     })
@@ -192,7 +240,9 @@ function renderAthleteList() {
 function renderSelectedPills() {
   const selected = selectedAthletes();
   dom.selectedCountLine.textContent = `${selected.length} selected (max ${MAX_SELECTION})`;
-  dom.compareLink.textContent = `Compare ${selected.length} selected athlete${selected.length === 1 ? "" : "s"}`;
+  const compareCtaText = `Compare ${selected.length} selected athlete${selected.length === 1 ? "" : "s"}`;
+  dom.compareLink.textContent = compareCtaText;
+  dom.heroCompareLink.textContent = compareCtaText;
 
   if (!selected.length) {
     dom.selectedPills.innerHTML = '<p class="muted">No athletes selected.</p>';
@@ -291,9 +341,38 @@ function toggleSelection(id, forceValue = null) {
 }
 
 function bindEvents() {
-  [dom.searchInput, dom.divisionFilter, dom.genderFilter, dom.countryFilter, dom.sortSelect].forEach((element) => {
+  [dom.searchInput, dom.divisionFilter, dom.genderFilter, dom.countryFilter].forEach((element) => {
     element.addEventListener("input", renderAll);
     element.addEventListener("change", renderAll);
+  });
+
+  dom.sortSelect.addEventListener("change", () => {
+    ensureSortColumnVisible();
+    renderAll();
+  });
+
+  dom.toggleColumnsBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    updateColumnPicker(!state.columnPickerOpen);
+  });
+
+  dom.columnPicker.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  dom.columnPicker.addEventListener("change", (event) => {
+    const checkbox = event.target.closest("input[type='checkbox'][data-column]");
+    if (!checkbox) {
+      return;
+    }
+    state.visibleColumns[checkbox.dataset.column] = checkbox.checked;
+    renderAthleteList();
+  });
+
+  document.addEventListener("click", () => {
+    if (state.columnPickerOpen) {
+      updateColumnPicker(false);
+    }
   });
 
   dom.athleteList.addEventListener("change", (event) => {
@@ -342,6 +421,14 @@ function bindEvents() {
     setSelection(nextIds);
     renderAll();
   });
+
+  dom.toggleDetailsBtn.addEventListener("click", () => {
+    updateDetailsCollapsed(true);
+  });
+
+  dom.expandDetailsBtn.addEventListener("click", () => {
+    updateDetailsCollapsed(false);
+  });
 }
 
 function introMotion() {
@@ -375,6 +462,10 @@ async function bootstrap() {
 
     dom.sourceLabel.textContent = `Preloaded: Hengqin text dataset (${state.allAthletes.length.toLocaleString()} athletes)`;
 
+    syncColumnPickerUI();
+    updateColumnPicker(false);
+    ensureSortColumnVisible();
+    updateDetailsCollapsed(false);
     renderAll();
     bindEvents();
     introMotion();
